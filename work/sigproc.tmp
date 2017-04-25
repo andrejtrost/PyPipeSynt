@@ -1,0 +1,54 @@
+module $name (
+   // control signals
+   input                 clk_i           ,  //!< processing clock
+   input                 rstn_i          ,  //!< processing reset - active low
+
+   // pipe inputs
+$inputs
+   // pipe outputs
+$outputs
+   // system bus
+   input      [ 32-1: 0] sys_addr        ,  //!< bus address
+   input      [ 32-1: 0] sys_wdata       ,  //!< bus write data
+   input                 sys_wen         ,  //!< bus write enable
+   input                 sys_ren         ,  //!< bus read enable
+   output reg [ 32-1: 0] sys_rdata       ,  //!< bus read data
+   output reg            sys_err         ,  //!< bus error indicator
+   output reg            sys_ack            //!< bus acknowledge signal
+);
+
+$reg_decl
+
+//---------------------------------------------------------------------------------
+//
+//  System bus connection
+
+always @(posedge clk_i) begin
+   if (rstn_i == 1'b0) begin
+$reg_reset	  
+   end
+   else begin
+      if (sys_wen) begin
+$reg_write
+      end
+   end
+end
+
+wire sys_en;
+assign sys_en = sys_wen | sys_ren;
+
+always @(posedge clk_i)
+if (rstn_i == 1'b0) begin
+   sys_err <= 1'b0 ;
+   sys_ack <= 1'b0 ;
+end else begin
+   sys_err <= 1'b0 ;
+
+   casez (sys_addr[19:0])
+$reg_read
+     default : begin sys_ack <= sys_en;   sys_rdata <=  32'h0; end
+   endcase
+end
+
+$module
+endmodule
